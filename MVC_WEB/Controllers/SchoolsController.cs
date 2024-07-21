@@ -1,7 +1,9 @@
 ﻿using MVC_WEB.Models;
+using MVC_WEB.Services; // Đảm bảo import namespace chứa interface IStudentService
 using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 
@@ -9,84 +11,135 @@ namespace MVC_WEB.Controllers
 {
     public class SchoolsController : Controller
     {
-        // GET: Schools
-        public ActionResult Index()
+        private readonly IStudentService _studentService;
+        private DBSchoolsContext db = new DBSchoolsContext();
+        public SchoolsController(IStudentService studentService)
         {
-            var listSchools = new DBSchoolsContext().Students.ToList();
-         
+            _studentService = studentService;
+        }
+
+        // GET: Schools
+        public async Task<ActionResult> Index()
+        {
+            var listSchools = await _studentService.GetStudentsAsync();
             return View(listSchools);
         }
 
-        // GET: Schools/Details/5
-        public ActionResult Details(int id)
+        public async Task<JsonResult> GetStudents()
         {
-            return View();
-        }
-
-        // GET: Schools/Create
-        public ActionResult Create()
-        {
-            return View();
+            var students = await _studentService.GetStudentsAsync();
+            return Json(students, JsonRequestBehavior.AllowGet);
         }
 
         // POST: Schools/Create
         [HttpPost]
-        public ActionResult Create(FormCollection collection)
+        public async Task<JsonResult> CreateStudent()
         {
-            try
+            var file = Request.Files["photo"];
+            var student = new Student
             {
-                // TODO: Add insert logic here
+                LastName = Request.Form["LastName"],
+                FirstMidName = Request.Form["FirstMidName"],
+                EnrollmentDate = DateTime.Parse(Request.Form["EnrollmentDate"])
+            };
 
-                return RedirectToAction("Index");
-            }
-            catch
+            if (file != null && file.ContentLength > 0)
             {
-                return View();
+                var fileName = Path.GetFileName(file.FileName);
+                var path = Path.Combine(Server.MapPath("~/Content/StudentPhotos"), fileName);
+                file.SaveAs(path);
+                student.PhotoPath = "/Content/StudentPhotos/" + fileName;
             }
+
+            db.Students.Add(student);
+            db.SaveChanges();
+            return Json(student);
         }
 
         // GET: Schools/Edit/5
-        public ActionResult Edit(int id)
+        public async Task<ActionResult> Edit(int id)
         {
-            return View();
+            int studentId = int.Parse(Request.Form["ID"]);
+            var student = db.Students.Find(studentId);
+
+            if (student != null)
+            {
+                student.FirstMidName = Request.Form["FirstMidName"];
+                student.LastName = Request.Form["LastName"];
+                student.EnrollmentDate = DateTime.Parse(Request.Form["EnrollmentDate"]);
+
+                var file = Request.Files["photo"];
+                if (file != null && file.ContentLength > 0)
+                {
+                    var fileName = Path.GetFileName(file.FileName);
+                    var path = Path.Combine(Server.MapPath("~/Content/StudentPhotos"), fileName);
+                    file.SaveAs(path);
+                    student.PhotoPath = "/Content/StudentPhotos/" + fileName;
+                }
+
+                db.SaveChanges();
+                return Json(student);
+            }
+
+            return HttpNotFound();
         }
 
         // POST: Schools/Edit/5
         [HttpPost]
-        public ActionResult Edit(int id, FormCollection collection)
+        public async Task<JsonResult> EditStudent()
         {
-            try
-            {
-                // TODO: Add update logic here
+            int studentId = int.Parse(Request.Form["ID"]);
+            var student = await _studentService.GetStudentByIdAsync(studentId);
 
-                return RedirectToAction("Index");
-            }
-            catch
+            if (student != null)
             {
-                return View();
+                student.FirstMidName = Request.Form["FirstMidName"];
+                student.LastName = Request.Form["LastName"];
+                student.EnrollmentDate = DateTime.Parse(Request.Form["EnrollmentDate"]);
+
+                var file = Request.Files["photo"];
+                if (file != null && file.ContentLength > 0)
+                {
+                    var fileName = Path.GetFileName(file.FileName);
+                    var path = Path.Combine(Server.MapPath("~/Content/StudentPhotos"), fileName);
+                    file.SaveAs(path);
+                    student.PhotoPath = "/Content/StudentPhotos/" + fileName;
+
+                    using (var binaryReader = new BinaryReader(file.InputStream))
+                    {
+                        student.Photo = binaryReader.ReadBytes(file.ContentLength);
+                    }
+                }
+
+                var updatedStudent = await _studentService.UpdateStudentAsync(student);
+                return Json(updatedStudent);
             }
+
+            return HttpNotFound();
         }
 
         // GET: Schools/Delete/5
-        public ActionResult Delete(int id)
+        [HttpPost]
+        public async Task<JsonResult> DeleteStudent(int id)
         {
-            return View();
+            await _studentService.DeleteStudentAsync(id);
+            return Json(new { success = true });
         }
 
-        // POST: Schools/Delete/5
-        [HttpPost]
-        public ActionResult Delete(int id, FormCollection collection)
+        // GET: Schools/GetPhoto/5
+        public ActionResult GetPhoto(int id)
         {
-            try
+            var student = _studentService.GetStudentById(id);
+            if (student != null && !string.IsNullOrEmpty(student.PhotoPath))
             {
-                // TODO: Add delete logic here
-
-                return RedirectToAction("Index");
+                var photoPath = Server.MapPath(student.PhotoPath);
+                if (System.IO.File.Exists(photoPath))
+                {
+                    byte[] photo = System.IO.File.ReadAllBytes(photoPath);
+                    return File(photo, "image/jpeg");
+                }
             }
-            catch
-            {
-                return View();
-            }
+            return HttpNotFound();
         }
     }
 }

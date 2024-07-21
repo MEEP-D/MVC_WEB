@@ -1,45 +1,216 @@
 ﻿@model IEnumerable<MVC_WEB.Models.Student>
 
-@{
-    ViewBag.Title = "Index";
-}
+<div class="jumbotron text-center">
+    <h2>Index</h2>
+    <p>
+        @Html.ActionLink("Create New", "Create", null, new { @class = "btn btn-primary" })
+    </p>
+</div>
 
-<h2>Index</h2>
+<div class="row">
+    <div class="col-md-12">
+        <button id="btnLoadStudents" class="btn btn-success mb-3">Load Students</button>
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.LastName)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.FirstMidName)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.EnrollmentDate)
-        </th>
-        <th></th>
-    </tr>
+        <table class="table table-bordered table-striped" id="studentsTable">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Photo</th>
+                    <th>@Html.DisplayNameFor(model => model.LastName)</th>
+                    <th>@Html.DisplayNameFor(model => model.FirstMidName)</th>
+                    <th>@Html.DisplayNameFor(model => model.EnrollmentDate)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr data-id="@item.ID">
+                        <td>
+                            <img src="@Url.Action("GetPhoto", "Schools", new { id = item.ID })" alt="Student Photo" width="100" height="100" />
+                        </td>
+                        <td>@Html.DisplayFor(modelItem => item.LastName)</td>
+                        <td>@Html.DisplayFor(modelItem => item.FirstMidName)</td>
+                        <td>@Html.DisplayFor(modelItem => item.EnrollmentDate)</td>
+                        <td>
+                            <a href="#" class="edit-student btn btn-info btn-sm">Edit</a>
+                            <a href="#" class="delete-student btn btn-danger btn-sm">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.LastName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.FirstMidName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.EnrollmentDate)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.ID }) |
-            @Html.ActionLink("Details", "Details", new { id=item.ID }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.ID })
-        </td>
-    </tr>
-}
+<!-- Create Student Form -->
+<div class="card mt-5">
+    <div class="card-header">
+        <h3>Create Student</h3>
+    </div>
+    <div class="card-body">
+        <form id="createStudentForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="createPhoto">Photo</label>
+                <input type="file" class="form-control" id="createPhoto" name="photo" />
+            </div>
+            <div class="form-group">
+                <label for="createLastName">Last Name</label>
+                <input type="text" class="form-control" id="createLastName" name="LastName" placeholder="Last Name" required />
+            </div>
+            <div class="form-group">
+                <label for="createFirstMidName">First Name</label>
+                <input type="text" class="form-control" id="createFirstMidName" name="FirstMidName" placeholder="First Name" required />
+            </div>
+            <div class="form-group">
+                <label for="createEnrollmentDate">Enrollment Date</label>
+                <input type="date" class="form-control" id="createEnrollmentDate" name="EnrollmentDate" required />
+            </div>
+            <button type="submit" class="btn btn-primary">Create</button>
+        </form>
+    </div>
+</div>
 
-</table>
+<!-- Edit Student Form -->
+<div class="card mt-5" id="editStudentForm" style="display:none;">
+    <div class="card-header">
+        <h3>Edit Student</h3>
+    </div>
+    <div class="card-body">
+        <form id="editStudentForm" enctype="multipart/form-data">
+            <input type="hidden" id="editStudentId" name="ID" />
+            <div class="form-group">
+                <label for="editPhoto">Photo</label>
+                <input type="file" class="form-control" id="editPhoto" name="photo" />
+            </div>
+            <div class="form-group">
+                <label for="editLastName">Last Name</label>
+                <input type="text" class="form-control" id="editLastName" name="LastName" placeholder="Last Name" required />
+            </div>
+            <div class="form-group">
+                <label for="editFirstMidName">First Name</label>
+                <input type="text" class="form-control" id="editFirstMidName" name="FirstMidName" placeholder="First Name" required />
+            </div>
+            <div class="form-group">
+                <label for="editEnrollmentDate">Enrollment Date</label>
+                <input type="date" class="form-control" id="editEnrollmentDate" name="EnrollmentDate" required />
+            </div>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+    </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $("#btnLoadStudents").click(function() {
+            $.ajax({
+                url: '@Url.Action("GetStudents", "Schools")',
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    var studentsTableBody = $("#studentsTable tbody");
+                    studentsTableBody.empty(); // Clear existing rows
+
+                    $.each(data, function(index, student) {
+                        var row = "<tr data-id='" + student.ID + "'>" +
+                            "<td><img src='/Schools/GetPhoto/" + student.ID + "' alt='Student Photo' width='100' height='100' /></td>" +
+                            "<td>" + student.LastName + "</td>" +
+                            "<td>" + student.FirstMidName + "</td>" +
+                            "<td>" + student.EnrollmentDate + "</td>" +
+                            "<td>" +
+                                "<a href='#' class='edit-student btn btn-info btn-sm'>Edit</a> | " +
+                                "<a href='#' class='delete-student btn btn-danger btn-sm'>Delete</a>" +
+                            "</td>" +
+                            "</tr>";
+                        studentsTableBody.append(row);
+                    });
+                },
+                error: function() {
+                    alert('Error loading students.');
+                }
+            });
+        });
+
+        $("#createStudentForm").submit(function(event) {
+            event.preventDefault();
+
+            var formData = new FormData(this);
+            $.ajax({
+                url: '@Url.Action("CreateStudent", "Schools")',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(data) {
+                    var row = "<tr data-id='" + data.ID + "'>" +
+                        "<td><img src='/Schools/GetPhoto/" + data.ID + "' alt='Student Photo' width='100' height='100' /></td>" +
+                        "<td>" + data.LastName + "</td>" +
+                        "<td>" + data.FirstMidName + "</td>" +
+                        "<td>" + data.EnrollmentDate + "</td>" +
+                        "<td>" +
+                            "<a href='#' class='edit-student btn btn-info btn-sm'>Edit</a> | " +
+                            "<a href='#' class='delete-student btn btn-danger btn-sm'>Delete</a>" +
+                        "</td>" +
+                        "</tr>";
+                    $("#studentsTable tbody").append(row);
+                },
+                error: function() {
+                    alert('Error creating student.');
+                }
+            });
+        });
+
+        $("#studentsTable").on("click", ".edit-student", function() {
+            var row = $(this).closest("tr");
+            var id = row.data("id");
+
+            $("#editStudentId").val(id);
+            $("#editPhoto").val('');
+            $("#editLastName").val(row.find("td:eq(1)").text());
+            $("#editFirstMidName").val(row.find("td:eq(2)").text());
+            $("#editEnrollmentDate").val(row.find("td:eq(3)").text());
+
+            $("#editStudentForm").show();
+        });
+
+        $("#editStudentForm").submit(function(event) {
+            event.preventDefault();
+
+            var formData = new FormData(this);
+            $.ajax({
+                url: '@Url.Action("EditStudent", "Schools")',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(data) {
+                    var row = $("#studentsTable tr[data-id='" + data.ID + "']");
+                    row.find("td:eq(0) img").attr("src", '/Schools/GetPhoto/' + data.ID);
+                    row.find("td:eq(1)").text(data.LastName);
+                    row.find("td:eq(2)").text(data.FirstMidName);
+                    row.find("td:eq(3)").text(data.EnrollmentDate);
+                },
+                error: function() {
+                    alert('Error editing student.');
+                }
+            });
+        });
+
+        $("#studentsTable").on("click", ".delete-student", function() {
+            var row = $(this).closest("tr");
+            var id = row.data("id");
+
+            $.ajax({
+                url: '@Url.Action("DeleteStudent", "Schools")',
+                type: 'POST',
+                data: { id: id },
+                success: function() {
+                    row.remove();
+                },
+                error: function() {
+                    alert('Error deleting student.');
+                }
+            });
+        });
+    });
+</script>
