@@ -1,0 +1,41 @@
+﻿
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Admin";
+}
+
+@model MVC_WEB.Models.LoginViewModel
+
+<div class="container">
+    <h2>Edit Student</h2>
+
+    @using (Html.BeginForm("Edit", "Admin", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.ID)
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.LastName)
+            @Html.TextBoxFor(model => model.LastName, new { @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.LastName)
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.FirstMidName)
+            @Html.TextBoxFor(model => model.FirstMidName, new { @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.FirstMidName)
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.EnrollmentDate)
+            @Html.TextBoxFor(model => model.EnrollmentDate, "{0:yyyy-MM-dd}", new { @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.EnrollmentDate)
+        </div>
+        <div class="form-group">
+            @Html.Label("Photo")
+            <input type="file" name="photo" class="form-control" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        @Html.ActionLink("Back to List", "Index", new { @class = "btn btn-secondary" })
+    }
+</div>
+

@@ -36,7 +36,7 @@ namespace MVC_WEB.Controllers
         public async Task<JsonResult> CreateStudent()
         {
             var file = Request.Files["photo"];
-            var student = new Student
+            var student = new LoginViewModel
             {
                 LastName = Request.Form["LastName"],
                 FirstMidName = Request.Form["FirstMidName"],

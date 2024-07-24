@@ -13,24 +13,24 @@ public class StudentService : IStudentService
         _context = context;
     }
 
-    public async Task<IEnumerable<Student>> GetStudentsAsync()
+    public async Task<IEnumerable<LoginViewModel>> GetStudentsAsync()
     {
         return await _context.Students.ToListAsync();
     }
 
-    public async Task<Student> GetStudentByIdAsync(int id)
+    public async Task<LoginViewModel> GetStudentByIdAsync(int id)
     {
         return await _context.Students.FindAsync(id);
     }
 
-    public async Task<Student> CreateStudentAsync(Student student)
+    public async Task<LoginViewModel> CreateStudentAsync(LoginViewModel student)
     {
         _context.Students.Add(student);
         await _context.SaveChangesAsync();
         return student;
     }
 
-    public async Task<Student> UpdateStudentAsync(Student student)
+    public async Task<LoginViewModel> UpdateStudentAsync(LoginViewModel student)
     {
         var existingStudent = await _context.Students.FindAsync(student.ID);
         if (existingStudent != null)

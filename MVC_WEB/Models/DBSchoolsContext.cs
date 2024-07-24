@@ -15,7 +15,8 @@ namespace MVC_WEB.Models
         public virtual DbSet<C__MigrationHistory> C__MigrationHistory { get; set; }
         public virtual DbSet<Course> Courses { get; set; }
         public virtual DbSet<Enrollment> Enrollments { get; set; }
-        public virtual DbSet<Student> Students { get; set; }
+        public virtual DbSet<LoginViewModel> Students { get; set; }
+        public virtual DbSet<LoginViewModel> Users { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

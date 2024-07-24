@@ -1,0 +1,37 @@
+﻿@model IEnumerable<MVC_WEB.Models.LoginViewModel>
+
+<div class="container">
+    <h2>Student Management</h2>
+    <p>
+        @Html.ActionLink("Create New Student", "Create", new { @class = "btn btn-primary" })
+    </p>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Photo</th>
+                <th>Last Name</th>
+                <th>First Name</th>
+                <th>Enrollment Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var student in Model)
+            {
+                <tr>
+                    <td>
+                        <img src="@Url.Content("~/Photos/" + student.PhotoPath)" alt="Student Photo" width="100" height="100" />
+                    </td>
+                    <td>@student.LastName</td>
+                    <td>@student.FirstMidName</td>
+                    <td>@student.EnrollmentDate.ToShortDateString()</td>
+                    <td>
+                        @Html.ActionLink("Edit", "Edit", new { id = student.ID }, new { @class = "btn btn-info btn-sm" }) |
+                        @Html.ActionLink("Delete", "Delete", new { id = student.ID }, new { @class = "btn btn-danger btn-sm" })
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

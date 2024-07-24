@@ -19,6 +19,6 @@ namespace MVC_WEB.Models
 
         public virtual Course Course { get; set; }
 
-        public virtual Student Student { get; set; }
+        public virtual LoginViewModel Student { get; set; }
     }
 }

@@ -1,0 +1,26 @@
+﻿
+@{
+    ViewBag.Title = "Delete";
+    Layout = "~/Views/Admin";
+}
+
+@model MVC_WEB.Models.LoginViewModel
+
+<div class="container">
+    <h2>Delete Student</h2>
+    <h3>Are you sure you want to delete this student?</h3>
+
+    <div>
+        <h4>@Model.LastName, @Model.FirstMidName</h4>
+        <p>Enrollment Date: @Model.EnrollmentDate.ToShortDateString()</p>
+
+        @using (Html.BeginForm("Delete", "Admin", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.ID)
+            <button type="submit" class="btn btn-danger">Delete</button>
+            @Html.ActionLink("Cancel", "Index", new { @class = "btn btn-secondary" })
+        }
+    </div>
+</div>
+
